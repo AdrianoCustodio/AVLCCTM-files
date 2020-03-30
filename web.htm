@@ -1,0 +1,378 @@
+
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>AVL Climatic chamber</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.js"></script>
+		<link rel="sortcut icon" href="AVL_icon.png" type="image/png" />
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css">
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+		<script src="https://code.highcharts.com/highcharts.js"></script>
+		<script src="https://code.highcharts.com/modules/exporting.js"></script>
+		<!--script src="exportdata.js"></script-->
+		<style type="text/css">
+			.clean { padding: 0; margin: 0;}
+		</style>
+	</head>
+<body>
+<div class="container">
+	<div class="row">	
+		<div class="page-header">
+		  <h1>AVL Climatic Chamber Temperature Monitoring <small>Developed by AVL Team BRA</small></h1>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-3 well">
+			<p>
+				Status: <span id="status" class="label"></span>
+			</p>
+			<p>
+				<h4><b>Selecione a câmara desejada a ser visualizada no gráfico</b></h4>
+				<!--Botão 1:-->
+				<div class="btn-group">
+				  <button type="button" class="btn btn-default botaoEnvia" id="001">Camara 1</button>
+				</div>
+				<span id="resultCamara1"></span>
+				<br/>
+				<!--Botão 2:-->
+				<div class="btn-group">
+				  <button type="button" class="btn btn-default botaoEnvia" id="002">Camara 2</button>
+				</div>
+				<span id="resultCamara2"></span>
+				<br/>
+				<!--Botão 3:-->
+				<div class="btn-group">
+				  <button type="button" class="btn btn-default botaoEnvia" id="003">Camara 3</button>
+				</div>
+				<span id="resultCamara3"></span>
+			</p>
+			<p>
+				<h4>Temperatura da camara:</h4>
+				Valor: <strong><span id="T_camara"></span></strong>°C
+			</p>
+			<p>
+				<h4>Água veiculo 1</h4>
+				Valor: <strong><span id="T_agua1"></span></strong>°C
+			</p>
+			<p>
+			<p>
+				<h4>Óleo veiculo 1</h4>
+				Valor: <strong><span id="T_oleo1"></span></strong>°C
+			</p>
+			<p>
+				<h4>Água veiculo 2</h4>
+				Valor: <strong><span id="T_agua2"></span></strong>°C
+			</p>
+			<p>
+				<h4>Óleo veiculo 2</h4>
+				Valor: <strong><span id="T_oleo2"></span></strong>°C
+			</p>
+			
+			<p>
+				<h4><b>Comandos de acionamento remoto da câmara climática</b></h4>
+				<h4>Camara 1</h4>
+				<!--Botão 4/5:-->
+				<div class="btn-group">
+				  <button type="button" class="btn btn-default botaoEnvia" id="004">Liga</button>
+				  <button type="button" class="btn btn-default botaoEnvia" id="005">Desliga</button>
+				</div>
+				<span id="resultrele1"></span>
+				<br/>
+				<h4>Camara 2</h4>
+				<!--Botão 6/7:-->
+				<div class="btn-group">
+				  <button type="button" class="btn btn-default botaoEnvia" id="006">Liga</button>
+				  <button type="button" class="btn btn-default botaoEnvia" id="007">Desliga</button>
+				</div>
+				<span id="resultrele2"></span>
+				<br/>
+				<h4>Camara 3</h4>
+				<!--Botão 8/9:-->
+				<div class="btn-group">
+				  <button type="button" class="btn btn-default botaoEnvia" id="008">Liga</button>
+				  <button type="button" class="btn btn-default botaoEnvia" id="009">Desliga</button>
+				</div>
+				<span id="resultrele3"></span>
+				<br/>
+		</div>
+		<div class="col-md-9">
+			<div class="clean" id="graphic" style="width: 100%; height: 800px;"></div>
+		</div>
+	</div>
+	
+</div>
+
+<script type="text/javascript">
+
+var url = 'http://169.254.208.200:1000';
+
+$(document).ready(function(){
+	$('.botaoEnvia').click(function(){
+        var valor = $(this).attr('id');
+        enviaDados(valor);
+		console.log(valor);
+    });
+	
+	function enviaDados(dado){		
+    	$.ajax({
+		    url: url,
+		    data: { 'acao': dado},
+		    dataType: 'jsonp',
+		    crossDomain: true,
+		    jsonp: false,
+		    jsonpCallback: 'dados',
+		    success: function(data,status,xhr) {
+				$('#resultCamara1').text(statusReturn(data.Camara1)); 
+				$('#resultCamara2').text(statusReturn(data.Camara2));
+				$('#resultCamara3').text(statusReturn(data.Camara3));
+				$('#resultrele1').text(statusReturnrele(data.rele1));
+				$('#resultrele2').text(statusReturnrele(data.rele2));
+				$('#resultrele3').text(statusReturnrele(data.rele3));
+		    }
+		  });
+        return false;
+    }
+
+    function statusReturn (valor) {
+    	if(valor == 0) {
+    		return "Desativada";
+    	}
+    	else if(valor == 1) {
+    		return "Ativa";
+    	}
+    	 else { return "Desconhecido";}
+    }
+	
+	function statusReturnrele (valor) {
+    	if(valor == 0) {
+    		return "Ligada";
+    	}
+    	else if(valor == 1) {
+    		return "Desligada";
+    	}
+    	 else { return "Desconhecido";}
+    }
+	
+var i = 0;
+
+	function fazerRequisicao(){
+		$('#status').removeClass('label-success').addClass('label-warning');
+		$('#status').text("Enviando Requisição...");
+    	$.ajax({
+		    url: url,
+		    data: { '': ''}, // usaremos em proximas versões
+		    dataType: 'jsonp', // IMPORTANTE
+		    crossDomain: true, // IMPORTANTE
+		    jsonp: false,
+		    jsonpCallback: 'dados', // IMPORTANTE
+		    success: function(data,status,xhr) {
+				$('#status').removeClass('label-warning').addClass('label-success')
+				$('#status').text("Requisição Recebida!");
+				$('#T_camara').text(data.T_camara);
+				$('#T_agua1').text(data.T_agua1);
+				$('#T_oleo1').text(data.T_oleo1);
+				$('#T_agua2').text(data.T_agua2);
+				$('#T_oleo2').text(data.T_oleo2);
+				i++;
+				setGrafico(i,data.T_camara,data.T_agua1,data.T_oleo1,data.T_agua2,data.T_oleo2);
+				//console.log(data.T_camara);
+		    }
+		  });
+        return false;
+    }
+    setInterval(fazerRequisicao, 2000);
+ });
+
+function setGrafico(i, T_camara,T_agua1,T_oleo1,T_agua2,T_oleo2)
+{
+	 TC = T_camara;
+	 TA1 = T_agua1;
+	 TA2 = T_agua2;
+	 TO1 = T_oleo1;
+	 TO2 = T_oleo2;
+	
+//console.log(i, TC,TA1,TO1,TA2,TO2);
+}	
+
+$(function () {
+    $(document).ready(function () {
+        Highcharts.setOptions({
+            global: {
+                useUTC: false
+            }
+        });
+
+        $('#graphic').highcharts({
+		        chart: {
+                type: 'spline',
+                animation: Highcharts.svg, // don't animate in old IE
+                marginRight: 10,
+                events: {
+                    load: function () {
+
+                        // set up the updating of the chart each second
+                        var series = this.series[0],
+                            ser2 = this.series[1];
+							ser3 = this.series[2];
+							ser4 = this.series[3];
+							ser5 = this.series[4];
+                        
+                        setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+                                y = TC
+                            series.addPoint([x, y], true, true);
+                            //ser2.addPoint([x, y], true, true);
+                        }, 1000);
+						setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+                                y = TA1
+                            //series.addPoint([x, y], false, true);
+                            ser2.addPoint([x, y], true, true);
+                        }, 1000);
+						setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+                                y = TO1
+                            //series.addPoint([x, y], false, true);
+                            ser3.addPoint([x, y], true, true);
+                        }, 1000);
+						setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+                                y = TA2
+                            //series.addPoint([x, y], false, true);
+                            ser4.addPoint([x, y], true, true);
+                        }, 1000);
+						setInterval(function () {
+                            var x = (new Date()).getTime(), // current time
+                                y = TO2
+                            //series.addPoint([x, y], false, true);
+                            ser5.addPoint([x, y], true, true);
+                        }, 1000);
+                    }
+                }
+            },
+
+            title: {
+                text: 'Climatic chamber temperature monitoring'
+            },
+			
+			/*subtitle: {
+			text: 'Camara',
+			x: -20
+			},*/
+			
+            xAxis: {
+                type: 'datetime',
+                tickPixelInterval: 150
+            },
+            yAxis: {
+                title: {
+                    text: 'Value'
+                },
+                plotLines: [{
+                    value: 0,
+                    width: 1,
+                    color: '#808080'
+                }]
+            },
+            tooltip: {
+ 
+				valueSuffix: ' °C'
+            },
+            legend: {
+			   enabled: true
+				
+            },
+            exporting: {
+                enabled: true
+            },
+            series: [{
+                name: 'Temperatura camara',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -300; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 3000,
+                            y: setGrafico()
+                        });
+                    }
+                    return data;
+                }())
+            },{
+                name: 'Temperatura água 1',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -300; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 3000,
+                            y: setGrafico()
+                        });
+                    }
+                    return data;
+                }())
+            },{
+                name: 'Temperatura óleo 1',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -300; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 3000,
+                            y: setGrafico()
+                        });
+                    }
+                    return data;
+                }())
+            },{
+                name: 'Temperatura água 2',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -300; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 3000,
+                            y: setGrafico()
+                        });
+                    }
+                    return data;
+                }())
+            },{
+                name: 'Temperatura óleo 2',
+                data: (function () {
+                    // generate an array of random data
+                    var data = [],
+                        time = (new Date()).getTime(),
+                        i;
+
+                    for (i = -300; i <= 0; i += 1) {
+                        data.push({
+                            x: time + i * 3000,
+                            y: setGrafico()
+                        });
+                    }
+                    return data;
+                }())
+            }]
+        });
+    });
+});
+
+</script>
+</body>
+</html>
